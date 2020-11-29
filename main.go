@@ -20,22 +20,18 @@ func main() {
 
 	bot, err := t.NewBotAPI(os.Getenv("TELEGRAM_API_TOKEN"))
 	if err != nil {
-		log.Panic(err)
+		log.Fatalln(err)
 	}
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := t.NewUpdate(0)
-	u.Timeout = 60
-
 	updates, err := bot.GetUpdatesChan(u)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
-		}
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		log.Printf("[%s]", update.Message.From.UserName)
 
 		switch update.Message.Command() {
 		case "encode":
