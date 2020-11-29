@@ -1,9 +1,9 @@
 package lib
 
 import (
-	"fmt"
+	"bytes"
+	"errors"
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -23,14 +23,18 @@ type morse struct{}
 
 // Encode returns encoded morse code for the given input.
 func (m *morse) Encode(r io.Reader) (string, error) {
-	rr, err := ioutil.ReadAll(r)
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(r)
 	if err != nil {
-		return "", fmt.Errorf("There is an issue with input. Err: %s", err)
+		return "", errors.New("Error occured while reading the input.")
 	}
 
-	data := strings.ToUpper(strings.TrimSpace(string(rr)))
-	words := strings.Split(data, " ")
+	data := strings.ToUpper(strings.TrimSpace(buf.String()))
+	if data == "" {
+		return "", errors.New("You have to give an input.")
+	}
 
+	words := strings.Split(data, " ")
 	var resultCodes []string
 	var foundLetterCount int
 	for _, word := range words {
@@ -57,14 +61,18 @@ func (m *morse) Encode(r io.Reader) (string, error) {
 
 // Decode returns decoded morse code result for the given input.
 func (m *morse) Decode(r io.Reader) (string, error) {
-	rr, err := ioutil.ReadAll(r)
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(r)
 	if err != nil {
-		return "", fmt.Errorf("There is an issue with input. Err: %s", err)
+		return "", errors.New("Error occured while reading the input.")
 	}
 
-	data := string(rr)
-	resultCodes := strings.Split(data, "/")
+	data := buf.String()
+	if data == "" {
+		return "", errors.New("You have to give an input.")
+	}
 
+	resultCodes := strings.Split(data, "/")
 	var result []string
 	for _, resultCode := range resultCodes {
 		var word string
